@@ -1,6 +1,6 @@
-import AuthService from "../services/Auth.js";
-import ErrorsUtils from "../utils/Errors.js";
-import { COOKIE_SETTINGS } from "../constants.js";
+import AuthService from '../services/Auth.js';
+import ErrorsUtils from '../utils/Errors.js';
+import { COOKIE_SETTINGS } from '../constants.js';
 
 class AuthController {
   static async signIn(req, res) {
@@ -13,9 +13,20 @@ class AuthController {
   }
 
   static async signUp(req, res) {
+    const { userName, password, role } = req.body;
     const { fingerprint } = req;
+
     try {
-      return res.sendStatus(200);
+      const { accessToken, refreshToken, accessTokenExpiration } = await AuthService.signUp({
+        userName,
+        password,
+        role,
+        fingerprint,
+      });
+
+      res.cookie('refreshToken', refreshToken, COOKIE_SETTINGS.REFRESH_TOKEN);
+
+      return res.sendStatus(200).json({ accessToken, accessTokenExpiration });
     } catch (err) {
       return ErrorsUtils.catchError(res, err);
     }
